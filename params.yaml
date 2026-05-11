@@ -1,0 +1,9 @@
+# Configuración de los datos
+train:
+  test_size: 0.2
+  random_state: 42
+
+# Hiperparámetros del modelo
+model:
+  n_estimators: 100
+  max_depth: 10
