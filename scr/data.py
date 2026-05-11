@@ -23,10 +23,10 @@ from sklearn.pipeline import Pipeline
 # ──────────────────────────────────────────────
 # Configuración
 # ──────────────────────────────────────────────
-PARAMS_PATH = "../params.yaml"
-RAW_DATA_PATH = "../data/raw/churn_sintetico.csv"
-PROCESSED_PATH = "../data/processed"
-MODELS_PATH = "../models"
+PARAMS_PATH = "params.yaml"
+RAW_DATA_PATH = "data/raw/churn_sintetico.csv"
+PROCESSED_PATH = "data/processed"
+MODELS_PATH = "models"
 
 # lee los archivos yaml de configuracion
 
@@ -76,10 +76,10 @@ def load_data(path: str = RAW_DATA_PATH) -> pd.DataFrame:
 
 
 def split_features_target(df: pd.DataFrame):
-    """Separa features (X) y target (y)."""
-    X = df.drop(columns=[TARGET])
+    """Separa features (x) y target (y)."""
+    x = df.drop(columns=[TARGET])
     y = df[TARGET]
-    return X, y
+    return x, y
 
 
 def build_preprocessor() -> ColumnTransformer:
@@ -113,8 +113,8 @@ def run(params: dict = None):
     if params is None:
         params = load_params()
 
-    test_size = params["data"]["test_size"]
-    random_state = params["data"]["random_state"]
+    test_size = params["train"]["test_size"]
+    random_state = params["train"]["random_state"]
 
     # 1. Carga
     df = load_data()
@@ -124,7 +124,7 @@ def run(params: dict = None):
 
     # 3. Train / test split
     x_train, x_test, y_train, y_test = train_test_split(
-        X, y,
+        x, y,
         test_size=test_size,
         random_state=random_state,
         stratify=y  # mantiene proporción de churn en ambos splits

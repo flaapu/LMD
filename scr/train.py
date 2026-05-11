@@ -22,10 +22,10 @@ import seaborn as sns
 
 
 # Configuración
-PARAMS_PATH = "../params.yaml"
-PROCESSED_PATH = "../data/processed"
-MODELS_PATH = "../models"
-REPORTS_PATH = "../reports"
+PARAMS_PATH = "params.yaml"
+PROCESSED_PATH = "data/processed"
+MODELS_PATH = "models"
+REPORTS_PATH = "reports/figures"
 MLFLOW_EXPERIMENT = "andeslink-churn"
 
 
@@ -114,7 +114,7 @@ def train_and_log(model, model_name: str, params: dict,
 def run():
     params = load_params()
     X_train, X_test, y_train, y_test = load_processed_data()
-    rs = params["data"]["random_state"]
+    rs = params["train"]["random_state"]
 
     mlflow.set_experiment(MLFLOW_EXPERIMENT)
 
