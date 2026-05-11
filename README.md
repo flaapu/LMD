@@ -16,4 +16,23 @@ La empresa contrata al alumno como responsable de construir una solución end to
 con trazabilidad, reproducibilidad y organización de proyecto semejantes a las de un escenario profesional.
 
 
---- aqui debería de ir detallado como funciona el codigo completo
+Guía de como ejecutar el código
+
+1. Como primera y única instancia:
+ejecutá: pip install -r requirements.txt
+
+2. Ejecutar una vez eda.ipynb
+Ayuda como documentación de decisiones.
+La idea de su ejecucuion es que se generen los gráficos.
+
+2. Ejecutar data.py 
+Como segunda(o primera) instancia, correr el data.py
+Que hace este archivo? lee el csv, limpia, escala, codifica y crea los archivos train.csv y test.csv en la carpeta processed. Tambien crea y guarda el archivo preprocessor.joblib
+
+En caso de que no encuentres los archivos creados en la carpeta, indica que algo salió mal. 
+
+3. Ejecutar train.py 
+Lee los csv creadosen /processed, entrena con regresion logistica y rf, compara cual es mejor y guarda el dato en models/best_model.joblib
+
+por consola debería de mostrar el recal y el ROC-AUC.
+

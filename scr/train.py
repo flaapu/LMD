@@ -1,9 +1,7 @@
 """
 train.py – Entrenamiento y evaluación del modelo de churn
-AndesLink Servicios Digitales S.A. | ISTEA · Laboratorio de Minería de Datos
 
-Entrena dos modelos (Regresión Logística + Random Forest), compara resultados
-con MLflow, serializa el mejor modelo.
+Entrena dos modelos (Regresión Logística + Random Forest), compara resultados con MLflow, serializa el mejor modelo.
 """
 
 import os
@@ -22,13 +20,12 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# ──────────────────────────────────────────────
+
 # Configuración
-# ──────────────────────────────────────────────
-PARAMS_PATH = "params.yaml"
-PROCESSED_DIR = "data/processed"
-MODELS_DIR = "models"
-REPORTS_DIR = "reports/figures"
+PARAMS_PATH = "../params.yaml"
+PROCESSED_PATH = "../data/processed"
+MODELS_PATH = "../models"
+REPORTS_PATH = "../reports"
 MLFLOW_EXPERIMENT = "andeslink-churn"
 
 
@@ -39,8 +36,8 @@ def load_params(path: str = PARAMS_PATH) -> dict:
 
 def load_processed_data():
     """Carga los splits procesados."""
-    train = pd.read_csv(f"{PROCESSED_DIR}/train.csv")
-    test = pd.read_csv(f"{PROCESSED_DIR}/test.csv")
+    train = pd.read_csv(f"{PROCESSED_PATH}/train.csv")
+    test = pd.read_csv(f"{PROCESSED_PATH}/test.csv")
 
     X_train = train.drop(columns=["churn"]).values
     y_train = train["churn"].values
@@ -64,7 +61,7 @@ def compute_metrics(y_true, y_pred, y_prob) -> dict:
 
 def plot_confusion_matrix(y_true, y_pred, model_name: str):
     """Guarda la matriz de confusión como imagen."""
-    os.makedirs(REPORTS_DIR, exist_ok=True)
+    os.makedirs(REPORTS_PATH, exist_ok=True)
     cm = confusion_matrix(y_true, y_pred)
     plt.figure(figsize=(6, 5))
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues",
@@ -74,7 +71,7 @@ def plot_confusion_matrix(y_true, y_pred, model_name: str):
     plt.ylabel("Real")
     plt.xlabel("Predicho")
     plt.tight_layout()
-    path = f"{REPORTS_DIR}/confusion_matrix_{model_name.replace(' ', '_').lower()}.png"
+    path = f"{REPORTS_PATH}/confusion_matrix_{model_name.replace(' ', '_').lower()}.png"
     plt.savefig(path, dpi=150)
     plt.close()
     return path
@@ -154,8 +151,8 @@ def run():
           f"(ROC-AUC = {best['metrics']['roc_auc']:.4f})")
 
     # ── Serialización ──────────────────────────────────────────
-    os.makedirs(MODELS_DIR, exist_ok=True)
-    model_path = f"{MODELS_DIR}/best_model.joblib"
+    os.makedirs(MODELS_PATH, exist_ok=True)
+    model_path = f"{MODELS_PATH}/best_model.joblib"
     joblib.dump(best["model"], model_path)
     print(f"   Modelo guardado en '{model_path}'")
 

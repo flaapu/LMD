@@ -1,6 +1,5 @@
 """
-data_prep.py – Preprocesamiento del dataset de churn
-AndesLink Servicios Digitales S.A. | ISTEA · Laboratorio de Minería de Datos
+data.py – Preprocesamiento del dataset de churn
 
 Responsabilidades:
   - Carga del dataset raw
@@ -24,10 +23,12 @@ from sklearn.pipeline import Pipeline
 # ──────────────────────────────────────────────
 # Configuración
 # ──────────────────────────────────────────────
-PARAMS_PATH = "params.yaml"
-RAW_DATA_PATH = "data/raw/churn_sintetico.csv"
-PROCESSED_DIR = "data/processed"
-MODELS_DIR = "models"
+PARAMS_PATH = "../params.yaml"
+RAW_DATA_PATH = "../data/raw/churn_sintetico.csv"
+PROCESSED_PATH = "../data/processed"
+MODELS_PATH = "../models"
+
+# lee los archivos yaml de configuracion
 
 
 def load_params(path: str = PARAMS_PATH) -> dict:
@@ -35,9 +36,7 @@ def load_params(path: str = PARAMS_PATH) -> dict:
         return yaml.safe_load(f)
 
 
-# ──────────────────────────────────────────────
 # Definición de columnas
-# ──────────────────────────────────────────────
 TARGET = "churn"
 
 NUMERIC_COLS = [
@@ -47,15 +46,14 @@ NUMERIC_COLS = [
     "support_tickets",
     "late_payments",
     "avg_monthly_usage_gb",
+    "num_products",
     "customer_age",
 ]
 
-# Binarias: ya son 0/1, no necesitan escala ni encoding
 BINARY_COLS = [
     "has_streaming",
     "has_security_pack",
     "is_promo",
-    "num_products",  # ordinal tratado como numérica
 ]
 
 CATEGORICAL_COLS = [
@@ -64,6 +62,9 @@ CATEGORICAL_COLS = [
     "internet_service",
     "region",
 ]
+
+# Procesamiento
+#
 
 
 def load_data(path: str = RAW_DATA_PATH) -> pd.DataFrame:
@@ -119,23 +120,23 @@ def run(params: dict = None):
     df = load_data()
 
     # 2. Split features / target
-    X, y = split_features_target(df)
+    x, y = split_features_target(df)
 
     # 3. Train / test split
-    X_train, X_test, y_train, y_test = train_test_split(
+    x_train, x_test, y_train, y_test = train_test_split(
         X, y,
         test_size=test_size,
         random_state=random_state,
         stratify=y  # mantiene proporción de churn en ambos splits
     )
-    print(f"[data_prep] Train: {X_train.shape[0]} | Test: {X_test.shape[0]}")
+    print(f"[data_prep] Train: {x_train.shape[0]} | Test: {x_test.shape[0]}")
     print(
         f"[data_prep] Churn rate train: {y_train.mean():.3f} | test: {y_test.mean():.3f}")
 
     # 4. Ajustar preprocesador SOLO sobre train
     preprocessor = build_preprocessor()
-    X_train_proc = preprocessor.fit_transform(X_train)
-    X_test_proc = preprocessor.transform(X_test)
+    x_train_proc = preprocessor.fit_transform(x_train)
+    x_test_proc = preprocessor.transform(x_test)
 
     # 5. Recuperar nombres de columnas del output
     ohe_features = preprocessor.named_transformers_["cat"] \
@@ -143,22 +144,22 @@ def run(params: dict = None):
     feature_names = NUMERIC_COLS + BINARY_COLS + ohe_features
 
     # 6. Guardar datasets procesados
-    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_PATH, exist_ok=True)
 
-    pd.DataFrame(X_train_proc, columns=feature_names).assign(churn=y_train.values) \
-        .to_csv(f"{PROCESSED_DIR}/train.csv", index=False)
-    pd.DataFrame(X_test_proc, columns=feature_names).assign(churn=y_test.values) \
-        .to_csv(f"{PROCESSED_DIR}/test.csv", index=False)
+    pd.DataFrame(x_train_proc, columns=feature_names).assign(churn=y_train.values) \
+        .to_csv(f"{PROCESSED_PATH}/train.csv", index=False)
+    pd.DataFrame(x_test_proc, columns=feature_names).assign(churn=y_test.values) \
+        .to_csv(f"{PROCESSED_PATH}/test.csv", index=False)
 
-    print(f"[data_prep] Datos guardados en '{PROCESSED_DIR}/'")
+    print(f"[data_prep] Datos guardados en '{PROCESSED_PATH}/'")
 
     # 7. Guardar el preprocesador para inference
-    os.makedirs(MODELS_DIR, exist_ok=True)
-    joblib.dump(preprocessor, f"{MODELS_DIR}/preprocessor.joblib")
+    os.makedirs(MODELS_PATH, exist_ok=True)
+    joblib.dump(preprocessor, f"{MODELS_PATH}/preprocessor.joblib")
     print(
-        f"[data_prep] Preprocesador guardado en '{MODELS_DIR}/preprocessor.joblib'")
+        f"[data_prep] Preprocesador guardado en '{MODELS_PATH}/preprocessor.joblib'")
 
-    return X_train_proc, X_test_proc, y_train.values, y_test.values, feature_names
+    return x_train_proc, x_test_proc, y_train.values, y_test.values, feature_names
 
 
 if __name__ == "__main__":
