@@ -18,7 +18,7 @@ RUN python scr/data.py && python scr/train.py
 RUN PYTHONPATH=. pytest
 
 # 7. Exponer el puerto de FastAPI
-EXPOSE 8000
+EXPOSE 8080
 
 # 8. Comando para levantar el servidor de FastAPI usando Uvicorn
-CMD ["uvicorn", "scr.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "scr.app:app", "--host", "0.0.0.0", "--port", "8080"]
