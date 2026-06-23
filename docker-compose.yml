@@ -1,12 +1,36 @@
 version: '3.8'
 
 services:
+
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: churn-api-service
     ports:
       - "8080:8080"
     volumes:
-      - .:/app
+      - ./models:/app/models
+      - ./data:/app/data
     environment:
-      - PYTHONPATH=.
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  gui:
+    build:
+      context: .
+      dockerfile: Dockerfile.gui
+    container_name: churn-gui-service
+    ports:
+      - "8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      - API_URL=http://api:8080/predict
+    restart: unless-stopped

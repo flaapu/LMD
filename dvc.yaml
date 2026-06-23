@@ -2,13 +2,25 @@ stages:
   preprocess:
     cmd: python scr/data.py
     deps:
-    - data/churn_sintetico.csv
-    - scr/data.py
+      - scr/data.py
+      - data/raw/churn_sintetico.csv
+    params:
+      - train.test_size
+      - train.random_state
     outs:
-    - models/preprocessor.joblib  # Cambiá el nombre si tu script genera otro archivo
+      - data/processed/train.csv
+      - data/processed/test.csv
+      - models/preprocessor.joblib
+
   train:
     cmd: python scr/train.py
     deps:
-    - scr/train.py
+      - scr/train.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+    params:
+      - train.random_state
+      - model.n_estimators
+      - model.max_depth
     outs:
-    - models/best_model.joblib
+      - models/best_model.joblib
