@@ -17,17 +17,17 @@ Para compilar la imagen y levantar el servicio sin necesidad de configurar Pytho
 
 ### 1. Construir la Imagen Docker
 Este comando instalará las dependencias necesarias, ejecutará el pipeline de datos, entrenará el modelo de ML y correrá los tests unitarios automáticos antes de finalizar la construcción:
-```bash
+
 docker build -t churn-service .
 
-2. Levantar el Contenedor (Servidor API)
-Una vez construida la imagen con éxito, enciende el contenedor mapeando el puerto 8000:
+### 2. Levantar el Contenedor (Servidor API)
+Una vez construida la imagen con éxito, enciende el contenedor mapeando el puerto 8080:
 
-docker run -p 8000:8000 churn-service
+docker run -p 8080:8080 churn-service
 
-Cómo Probar la API en Vivo
+### Cómo Probar la API en Vivo
 Cuando el contenedor esté corriendo, abre tu navegador web e ingresa a la documentación interactiva:
-👉 http://localhost:8000/docs
+👉 http://localhost:8080/docs
 
 Ejemplo de Prueba (Endpoint /predict)
 El modelo espera un vector de entrada con las 22 características (features) preprocesadas del cliente. Puedes usar el siguiente JSON de ejemplo dentro del botón "Try it out" -> "Execute":
