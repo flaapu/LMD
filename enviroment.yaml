@@ -1,17 +1,17 @@
-Set-Content -Path "environment.yml" -Value @"
-name: lmd_env
+name: churn-env
 channels:
   - defaults
   - conda-forge
 dependencies:
   - python=3.12
+  - pandas
+  - scikit-learn
+  - pytest
   - pip
   - pip:
-    - dvc
-    - mlflow
-    - pandas
-    - numpy
-    - scikit-learn
-    - joblib
-    - pyyaml
-"@
+      - fastapi
+      - uvicorn
+      - mlflow
+      - pydantic
+      - joblib
+      - setuptools<70.0.0

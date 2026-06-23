@@ -7,7 +7,6 @@ from fastapi.testclient import TestClient
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # 2. Ahora sí, importamos la app de forma segura
-
 client = TestClient(app)
 
 

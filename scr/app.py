@@ -1,46 +1,64 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-import joblib
 import os
-import numpy as np
+import sys
+import joblib
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, conlist
 
-app = FastAPI(title="API de Predicción de Churn", version="2.0")
+# Asegurar que Python reconozca la raíz del proyecto para las rutas
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-# Definir la ruta del modelo
-MODEL_PATH = os.path.join("models", "best_model.joblib")
+app = FastAPI(
+    title="AndesLink Churn Prediction API",
+    description="API local para la predicción de abandono de clientes bajo prácticas MLOps.",
+    version="1.0.0"
+)
+
+# Cargar el modelo entrenado y serializado de forma segura
+MODEL_PATH = "models/best_model.joblib"
+if os.path.exists(MODEL_PATH):
+    model = joblib.load(MODEL_PATH)
+else:
+    model = None
+
+# DEFINICIÓN DEL CONTRATO DE ENTRADA (Requisito obligatorio de la consigna)
+# Forzamos a que la entrada sea una lista de exactamente 22 números flotantes
+
+
+class PredictionInput(BaseModel):
+    features: conlist(float, min_length=22, max_length=22)
 
 
 @app.get("/")
-def home():
-    return {"message": "API de Predicción de Churn funcionando correctamente."}
+def read_root():
+    return {
+        "status": "online",
+        "message": "API de Predicción de Churn para AndesLink funcionando correctamente."
+    }
 
 
 @app.post("/predict")
-def predict(features: list[float]):
-    """
-    Recibe una lista de números (features) y devuelve la predicción.
-    Ejemplo de entrada: [1.0, 24.5, 0.0, 120.0]
-    """
-    if not os.path.exists(MODEL_PATH):
+def predict_churn(data: PredictionInput):
+    # Si el modelo no se encuentra en el contenedor
+    if model is None:
         raise HTTPException(
-            status_code=404, detail="El modelo entrenado no existe. Ejecute el entrenamiento primero.")
+            status_code=503,
+            detail="El modelo predictivo no está disponible. Verifique el pipeline de entrenamiento."
+        )
 
     try:
-        # Cargar el modelo
-        model = joblib.load(MODEL_PATH)
+        # data.features ya viene validado por Pydantic con longitud 22
+        prediction = model.predict([data.features])
+        probability = model.predict_proba([data.features])[0][1]
 
-        # Convertir datos de entrada a formato correcto para sklearn
-        data = np.array(features).reshape(1, -1)
-
-        # Predecir
-        prediction = int(model.predict(data)[0])
-        probability = float(model.predict_proba(data)[0][1])
-
+        # DEFINICIÓN DEL CONTRATO DE SALIDA CONSISTENTE
         return {
-            "churn_prediction": prediction,
-            "churn_probability": probability,
-            "status": "success"
+            "status": "success",
+            "churn_prediction": int(prediction[0]),
+            "churn_probability": round(float(probability), 4)
         }
+
     except Exception as e:
         raise HTTPException(
-            status_code=400, detail=f"Error en la predicción: {str(e)}")
+            status_code=400,
+            detail=f"Error al procesar la inferencia: {str(e)}"
+        )
