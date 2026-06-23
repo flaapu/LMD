@@ -1,38 +1,47 @@
-# LMD
-Laboratorio de Minería de Datos
+## Laboratorio MLOps - Predicción de Churn (LMD)
+Este proyecto implementa un pipeline de Machine Learning estructurado y reproducible para predecir el Churn (abandono) de clientes, utilizando buenas prácticas de MLOps como control de versiones de código y tracking de experimentos.
 
-Contexto de negocio
-AndesLink Servicios Digitales S.A. comercializa planes de suscripción para servicios digitales orientados a
-consumidores finales. Durante los últimos trimestres, la empresa ha detectado una tasa creciente de
-cancelación voluntaria de clientes. El directorio entiende que la pérdida de clientes no solo afecta los ingresos
-recurrentes, sino también el costo de adquisición de nuevos usuarios, la estabilidad del flujo de caja y la
-eficiencia de sus campañas comerciales.
-Con el objetivo de tomar decisiones más oportunas, la empresa desea contar con un modelo de Machine
-Learning capaz de estimar la probabilidad de churn a partir de variables de comportamiento, antigüedad,
-facturación y relación con el servicio. Además, exige que la solución no quede limitada al entrenamiento del
-modelo: debe poder ejecutarse localmente, exponerse mediante una API, consumirse desde una interfaz
-gráfica simple y contar con monitoreo técnico y de datos.
-La empresa contrata al alumno como responsable de construir una solución end to end en un entorno local,
-con trazabilidad, reproducibilidad y organización de proyecto semejantes a las de un escenario profesional.
+# Estructura del Pipeline
+El proyecto está dividido en etapas modulares para garantizar la mantenibilidad:
 
+1. Preprocesamiento (scr/data.py): Limpieza de datos crudos, imputación, ingeniería de features y división del dataset en sets de entrenamiento y testeo.
 
-Guía de como ejecutar el código
+2. Entrenamiento (scr/train.py): Entrenamiento competitivo de modelos, optimización de hiperparámetros, evaluación de métricas y registro automático en MLflow.
 
-1. Como primera y única instancia:
-ejecutá: pip install -r requirements.txt
+# Requisitos e Instalación
+Para replicar este entorno localmente, asegúrese de contar con Python 3.12 instalado y ejecute el siguiente comando para instalar las dependencias requeridas:
 
-2. Ejecutar data.py 
-Como segunda(o primera) instancia, correr el data.py
-Que hace este archivo? lee el csv, limpia, escala, codifica y crea los archivos train.csv y test.csv en la carpeta processed. Tambien crea y guarda el archivo preprocessor.joblib
+pip install dvc mlflow pandas numpy scikit-learn joblib pyyaml
 
-En caso de que no encuentres los archivos creados en la carpeta, indica que algo salió mal. 
+# Ejecución del Proyecto
+Para correr el pipeline completo de punta a punta de forma nativa, ejecute los siguientes comandos en orden desde la raíz del proyecto:
 
-3. Ejecutar train.py 
-Lee los csv creadosen /processed, entrena con regresion logistica y rf, compara cual es mejor y guarda el dato en models/best_model.joblib
+1. Ejecutar el preprocesamiento de datos
+python scr/data.py
 
-por consola debería de mostrar el recal y el ROC-AUC.
+2. Ejecutar el entrenamiento y registro de modelos
+python scr/train.py
 
-4. Ejecutar finalmente el archivo notebook/eda.ipynb
-Ayuda como documentación de decisiones.
-La idea de su ejecucuion es que se generen los gráficos para posterior análisis.
+# Resultados del Experimento
+Durante la fase de entrenamiento, se evaluaron dos arquitecturas de modelos sobre el set de datos procesado. Los resultados obtenidos fueron los siguientes:
 
+- Métrica: Regresión Logística (Ganador) | Random Forest
+- Accuracy: 0.6740 | 0.6910
+- Precision: 0.5145 | 0.5405
+- Recall: 0.7294 | 0.6088
+- F1-Score: 0.6034 | 0.5726
+- ROC-AUC: 0.7580 | 0.7366
+
+Modelo Seleccionado
+El mejor modelo elegido por el pipeline fue Logistic Regression con un ROC-AUC de 0.7580.
+
+Justificación: Aunque Random Forest obtuvo un accuracy ligeramente mayor, la Regresión Logística demostró un Recall significativamente superior (0.7294 vs 0.6088). En un problema de Churn, detectar a tiempo la mayor cantidad de clientes en riesgo de abandono (minimizar falsos negativos) es crítico para el negocio, haciendo de este modelo la opción óptima.
+
+El artefacto final se encuentra exportado y listo para producción en models/best_model.joblib.
+
+# Tracking con MLflow
+Todas las métricas, parámetros y matrices de confusión fueron registrados localmente en el servidor de experimentos. Para levantar la interfaz interactiva de MLflow y explorar los resultados visualmente, ejecute:
+
+mlflow ui
+
+Luego, ingrese a http://localhost:5000 desde su navegador web.

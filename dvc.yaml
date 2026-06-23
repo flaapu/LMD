@@ -1,0 +1,28 @@
+Set-Content -Path "dvc.yaml" -Value @"
+stages:
+  preprocess:
+    cmd: C:/Users/Usuario/AppData/Local/Microsoft/WindowsApps/python3.12.exe scr/data.py
+    deps:
+      - scr/data.py
+      - data/raw/churn_sintetico.csv
+    params:
+      - train.test_size
+      - train.random_state
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+      - models/preprocessor.joblib
+
+  train:
+    cmd: C:/Users/Usuario/AppData/Local/Microsoft/WindowsApps/python3.12.exe scr/train.py
+    deps:
+      - scr/train.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+    params:
+      - train.random_state
+      - model.n_estimators
+      - model.max_depth
+    outs:
+      - models/best_model.joblib
+"@
