@@ -1,47 +1,56 @@
-## Laboratorio MLOps - Predicción de Churn (LMD)
-Este proyecto implementa un pipeline de Machine Learning estructurado y reproducible para predecir el Churn (abandono) de clientes, utilizando buenas prácticas de MLOps como control de versiones de código y tracking de experimentos.
+# API de Predicción de Churn (Fugas de Clientes) 🚀
 
-# Estructura del Pipeline
-El proyecto está dividido en etapas modulares para garantizar la mantenibilidad:
+Este proyecto implementa un pipeline completo de Machine Learning (MLOps) enfocado en predecir el Churn de clientes. Cuenta con etapas automatizadas de procesamiento de datos, entrenamiento del modelo (trackeado con MLflow), pruebas unitarias automáticas con Pytest y empaquetamiento en un contenedor Docker usando FastAPI.
 
-1. Preprocesamiento (scr/data.py): Limpieza de datos crudos, imputación, ingeniería de features y división del dataset en sets de entrenamiento y testeo.
+## 📦 Estructura del Proyecto
+* `scr/data.py`: Carga y preprocesamiento del dataset.
+* `scr/train.py`: Entrenamiento del modelo de Regresión Logística y registro en MLflow.
+* `scr/app.py`: API REST construida con FastAPI para servir las predicciones.
+* `tests/test_api.py`: Pruebas de integración automatizadas para validar la API.
+* `Dockerfile`: Configuración del contenedor Docker para producción.
 
-2. Entrenamiento (scr/train.py): Entrenamiento competitivo de modelos, optimización de hiperparámetros, evaluación de métricas y registro automático en MLflow.
+---
 
-# Requisitos e Instalación
-Para replicar este entorno localmente, asegúrese de contar con Python 3.12 instalado y ejecute el siguiente comando para instalar las dependencias requeridas:
+## 🛠️ Instrucciones para Ejecutar el Proyecto con Docker
 
-pip install dvc mlflow pandas numpy scikit-learn joblib pyyaml
+Para compilar la imagen y levantar el servicio sin necesidad de configurar Python localmente, sigue estos pasos:
 
-# Ejecución del Proyecto
-Para correr el pipeline completo de punta a punta de forma nativa, ejecute los siguientes comandos en orden desde la raíz del proyecto:
+### 1. Construir la Imagen Docker
+Este comando instalará las dependencias necesarias, ejecutará el pipeline de datos, entrenará el modelo de ML y correrá los tests unitarios automáticos antes de finalizar la construcción:
+```bash
+docker build -t churn-service .
 
-1. Ejecutar el preprocesamiento de datos
-python scr/data.py
+2. Levantar el Contenedor (Servidor API)
+Una vez construida la imagen con éxito, enciende el contenedor mapeando el puerto 8000:
 
-2. Ejecutar el entrenamiento y registro de modelos
-python scr/train.py
+docker run -p 8000:8000 churn-service
 
-# Resultados del Experimento
-Durante la fase de entrenamiento, se evaluaron dos arquitecturas de modelos sobre el set de datos procesado. Los resultados obtenidos fueron los siguientes:
+Cómo Probar la API en Vivo
+Cuando el contenedor esté corriendo, abre tu navegador web e ingresa a la documentación interactiva:
+👉 http://localhost:8000/docs
 
-- Métrica: Regresión Logística (Ganador) | Random Forest
-- Accuracy: 0.6740 | 0.6910
-- Precision: 0.5145 | 0.5405
-- Recall: 0.7294 | 0.6088
-- F1-Score: 0.6034 | 0.5726
-- ROC-AUC: 0.7580 | 0.7366
+Ejemplo de Prueba (Endpoint /predict)
+El modelo espera un vector de entrada con las 22 características (features) preprocesadas del cliente. Puedes usar el siguiente JSON de ejemplo dentro del botón "Try it out" -> "Execute":
 
-Modelo Seleccionado
-El mejor modelo elegido por el pipeline fue Logistic Regression con un ROC-AUC de 0.7580.
+[
+  7.0,     // tenure_months (Meses de antigüedad)
+  58.23,   // monthly_charge (Cargo mensual)
+  326.5,   // total_charges (Cargos totales)
+  2.0,     // support_tickets (Tickets de soporte abiertos)
+  1.0,     // late_payments (Pagos atrasados)
+  81.83,   // avg_monthly_usage_gb (Consumo de GB promedio)
+  1.0, 0.0, 0.0, // contract_type (One-Hot: Mensual, Anual, Bianual)
+  0.0, 1.0, 0.0, 0.0, // payment_method (One-Hot: Transferencia, Débito, Efectivo, Crédito)
+  1.0, 0.0, 0.0, 0.0, // internet_service (Cable, Fibra, Móvil, Ninguno)
+  0.0,     // has_streaming (0 = No, 1 = Sí)
+  1.0,     // has_security_pack
+  3.0,     // num_products (Cantidad de productos contratados)
+  1.0, 0.0, 0.0, 0.0, // region (Centro, Norte, Oeste, Sur)
+  53.0,    // customer_age (Edad del cliente)
+  1.0      // is_promo (Si entró por promoción)
+]
+NOTA: La FastAPI no acepta comentarios dentro del cuadro de texto, asi que eliminar los comentarios para testear. 
 
-Justificación: Aunque Random Forest obtuvo un accuracy ligeramente mayor, la Regresión Logística demostró un Recall significativamente superior (0.7294 vs 0.6088). En un problema de Churn, detectar a tiempo la mayor cantidad de clientes en riesgo de abandono (minimizar falsos negativos) es crítico para el negocio, haciendo de este modelo la opción óptima.
+[7.0, 58.23, 326.5, 2.0, 1.0, 81.83, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 3.0, 1.0, 53.0]
 
-El artefacto final se encuentra exportado y listo para producción en models/best_model.joblib.
-
-# Tracking con MLflow
-Todas las métricas, parámetros y matrices de confusión fueron registrados localmente en el servidor de experimentos. Para levantar la interfaz interactiva de MLflow y explorar los resultados visualmente, ejecute:
-
-mlflow ui
-
-Luego, ingrese a http://localhost:5000 desde su navegador web.
+La API responderá en tiempo real con la predicción (0 si el cliente se queda, 1 si se da de baja) y su respectiva probabilidad.
