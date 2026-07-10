@@ -29,13 +29,16 @@ Este proyecto implementa un pipeline completo de Machine Learning (MLOps) enfoca
 3. Levantar la API y la GUI con Docker Compose:
    docker compose up --build
 
-###  Cómo Probar la API en VivoCuando el contenedor esté corriendo, abra su navegador web e ingrese a la documentación interactiva de Swagger UI:
+###  Cómo Probar la API en Vivo 
+Cuando el contenedor esté corriendo, abra su navegador web e ingrese a la documentación interactiva de Swagger UI:
 http://localhost:8080/docs  
 
-Ejemplo de Prueba (Endpoint /predict)   
-La API define un contrato estricto de validación que requiere un objeto JSON con la clave "features" que contenga una lista de exactamente 22 características preprocesadas del cliente.  
-Instrucciones para Pruebas: Presione el botón "Try it out", borre el contenido del cuadro de texto y copie el siguiente JSON estructurado (sin comentarios) para testear la inferencia en tiempo real:  
-
+Ejemplo de Prueba (Endpoint /predict)
+La API espera un objeto JSON con los datos crudos del cliente (15 campos: antigüedad, cargos, 
+tipo de contrato, región, etc.), no una lista de features preprocesadas — el preprocesamiento 
+lo aplica la propia API antes de invocar al modelo.
+Instrucciones para Pruebas: Presione el botón "Try it out", borre el contenido del cuadro de texto 
+y copie el siguiente JSON estructurado (sin comentarios) para testear la inferencia en tiempo real:
 JSON
 {
   "tenure_months": 7,
