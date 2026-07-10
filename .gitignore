@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# MLflow — se regenera localmente al correr train.py, no debe versionarse
+mlruns/
+mlflow.db
