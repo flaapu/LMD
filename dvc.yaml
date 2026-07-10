@@ -1,8 +1,8 @@
 stages:
   preprocess:
-    cmd: python scr/data.py
+    cmd: python src/data.py
     deps:
-      - scr/data.py
+      - src/data.py
       - data/raw/churn_sintetico.csv
     params:
       - train.test_size
@@ -13,9 +13,9 @@ stages:
       - models/preprocessor.joblib
 
   train:
-    cmd: python scr/train.py
+    cmd: python src/train.py
     deps:
-      - scr/train.py
+      - src/train.py
       - data/processed/train.csv
       - data/processed/test.csv
     params:

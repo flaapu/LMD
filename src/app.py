@@ -12,7 +12,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from enum import Enum
-from src.config import MODEL_PATH, PREPROCESSOR_PATH
+from prometheus_fastapi_instrumentator import Instrumentator
+
+from src.config import MODEL_PATH, PREPROCESSOR_PATH, API_PORT
+
 
 artifacts: dict = {}
 
@@ -46,8 +49,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# activo el instrumentador
+# instrument(app) obtiene las metricas de cada request que llega a la api
+# expose(app) crea el endpoint /metrics
+Instrumentator().instrument(app).expose(app)
 
 # ── Schema de entrada: datos crudos del cliente ──────────────
+
+
 class ContractType(str, Enum):
     mensual = "mensual"
     anual = "anual"
@@ -190,3 +199,8 @@ def predict(cliente: ClienteInput):
         riesgo=riesgo,
         status="success",
     )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=API_PORT)
