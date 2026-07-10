@@ -4,8 +4,8 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir streamlit==1.33.0 requests==2.31.0
 
-COPY scr/gui.py scr/gui.py
+COPY src/gui.py src/gui.py
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "scr/gui.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "src/gui.py", "--server.port=8501", "--server.address=0.0.0.0"]
