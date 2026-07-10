@@ -11,9 +11,8 @@ import pandas as pd
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-
-MODEL_PATH = os.path.join("models", "best_model.joblib")
-PREPROCESSOR_PATH = os.path.join("models", "preprocessor.joblib")
+from enum import Enum
+from src.config import MODEL_PATH, PREPROCESSOR_PATH
 
 artifacts: dict = {}
 
@@ -22,12 +21,12 @@ def _load_artifacts():
     if not os.path.exists(MODEL_PATH):
         raise RuntimeError(
             f"Modelo no encontrado en '{MODEL_PATH}'. "
-            "Ejecute primero: python scr/data.py && python scr/train.py"
+            "Ejecute primero: python src/data.py && python src/train.py"
         )
     if not os.path.exists(PREPROCESSOR_PATH):
         raise RuntimeError(
             f"Preprocesador no encontrado en '{PREPROCESSOR_PATH}'. "
-            "Ejecute primero: python scr/data.py"
+            "Ejecute primero: python src/data.py"
         )
     artifacts["model"] = joblib.load(MODEL_PATH)
     artifacts["preprocessor"] = joblib.load(PREPROCESSOR_PATH)
@@ -49,6 +48,32 @@ app = FastAPI(
 
 
 # ── Schema de entrada: datos crudos del cliente ──────────────
+class ContractType(str, Enum):
+    mensual = "mensual"
+    anual = "anual"
+    bianual = "bianual"
+
+
+class PaymentMethod(str, Enum):
+    transferencia = "transferencia"
+    debito = "debito"
+    efectivo = "efectivo"
+    credito = "credito"
+
+
+class InternetService(str, Enum):
+    cable = "cable"
+    fibra = "fibra"
+    movil = "movil"
+    ninguno = "ninguno"
+
+
+class Region(str, Enum):
+    centro = "centro"
+    norte = "norte"
+    oeste = "oeste"
+    sur = "sur"
+
 
 class ClienteInput(BaseModel):
     tenure_months: int = Field(..., ge=0)
@@ -62,10 +87,10 @@ class ClienteInput(BaseModel):
     has_streaming: int = Field(..., ge=0, le=1)
     has_security_pack: int = Field(..., ge=0, le=1)
     is_promo: int = Field(..., ge=0, le=1)
-    contract_type: str = Field(..., description="mensual | anual | bianual")
-    payment_method: str = Field(..., description="transferencia | debito | efectivo | credito")
-    internet_service: str = Field(..., description="cable | fibra | movil | ninguno")
-    region: str = Field(..., description="centro | norte | oeste | sur")
+    contract_type: ContractType
+    payment_method: PaymentMethod
+    internet_service: InternetService
+    region: Region
 
     model_config = {
         "json_schema_extra": {
@@ -133,22 +158,24 @@ def predict(cliente: ClienteInput):
         "has_streaming": cliente.has_streaming,
         "has_security_pack": cliente.has_security_pack,
         "is_promo": cliente.is_promo,
-        "contract_type": cliente.contract_type.lower().strip(),
-        "payment_method": cliente.payment_method.lower().strip(),
-        "internet_service": cliente.internet_service.lower().strip(),
-        "region": cliente.region.lower().strip(),
+        "contract_type": cliente.contract_type.value.lower().strip(),
+        "payment_method": cliente.payment_method.value.lower().strip(),
+        "internet_service": cliente.internet_service.value.lower().strip(),
+        "region": cliente.region.value.lower().strip(),
     }])
 
     try:
         X = artifacts["preprocessor"].transform(data)
     except Exception as e:
-        raise HTTPException(status_code=422, detail=f"Error en preprocesamiento: {str(e)}")
+        raise HTTPException(
+            status_code=422, detail=f"Error en preprocesamiento: {str(e)}")
 
     try:
         prediction = int(artifacts["model"].predict(X)[0])
         probability = float(artifacts["model"].predict_proba(X)[0][1])
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error en inferencia: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error en inferencia: {str(e)}")
 
     if probability < 0.35:
         riesgo = "Bajo"

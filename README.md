@@ -14,13 +14,20 @@ Este proyecto implementa un pipeline completo de Machine Learning (MLOps) enfoca
 
 ## 🛠️ Instrucciones para Ejecutar el Proyecto con Docker Compose
 
-Para compilar las imágenes, ejecutar el pipeline completo e iniciar toda la infraestructura de la solución en un entorno local reproducible, ejecute el siguiente comando en la raíz del proyecto:
+1. Entrenar el modelo (una sola vez, o cuando cambien los datos):
+   python src/data.py
+   python src/train.py
 
-docker compose up --build
+2. Correr los tests (opcional pero recomendado antes de desplegar):
 
-Este comando instalará las dependencias requeridas, ejecutará el pipeline de datos, entrenará el modelo, validará la API corriendo los tests automatizados y finalmente levantará el servidor web escuchando de forma exclusiva en el puerto 8080.
+  **Windows (PowerShell):**
+  $env:PYTHONPATH="." ; pytest
 
-docker build -t churn-service .
+  **Mac/Linux (Bash):**
+  PYTHONPATH=. pytest
+
+3. Levantar la API y la GUI con Docker Compose:
+   docker compose up --build
 
 ###  Cómo Probar la API en VivoCuando el contenedor esté corriendo, abra su navegador web e ingrese a la documentación interactiva de Swagger UI:
 http://localhost:8080/docs  
@@ -31,7 +38,21 @@ Instrucciones para Pruebas: Presione el botón "Try it out", borre el contenido 
 
 JSON
 {
-  "features": [7.0, 58.23, 326.5, 2.0, 1.0, 81.83, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 3.0, 1.0, 53.0]
+  "tenure_months": 7,
+  "monthly_charge": 58.23,
+  "total_charges": 326.5,
+  "support_tickets": 2,
+  "late_payments": 1,
+  "avg_monthly_usage_gb": 81.83,
+  "num_products": 3,
+  "customer_age": 53,
+  "has_streaming": 0,
+  "has_security_pack": 1,
+  "is_promo": 1,
+  "contract_type": "mensual",
+  "payment_method": "transferencia",
+  "internet_service": "cable",
+  "region": "centro"
 }
 
 Al presionar el botón azul "Execute", la API responderá con un formato consistente que incluye la predicción final (0 si el cliente mantiene el servicio, 1 si se predice abandono) junto a su respectiva probabilidad estimada.
