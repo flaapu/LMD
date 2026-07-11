@@ -1,0 +1,10 @@
+{
+  "dataset_drift": false,
+  "number_of_drifted_columns": 5,
+  "number_of_columns": 15,
+  "share_of_drifted_columns": 0.3333333333333333,
+  "interpretation": [
+    "Drift a nivel dataset: NO (5/15 columnas con drift, 33%).",
+    "Columnas con drift detectado: internet_service, late_payments, monthly_charge, tenure_months, total_charges"
+  ]
+}

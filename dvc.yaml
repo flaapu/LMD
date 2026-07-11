@@ -1,0 +1,26 @@
+stages:
+  preprocess:
+    cmd: python src/data.py
+    deps:
+      - src/data.py
+      - data/raw/churn_sintetico.csv
+    params:
+      - train.test_size
+      - train.random_state
+    outs:
+      - data/processed/train.csv
+      - data/processed/test.csv
+      - models/preprocessor.joblib
+
+  train:
+    cmd: python src/train.py
+    deps:
+      - src/train.py
+      - data/processed/train.csv
+      - data/processed/test.csv
+    params:
+      - train.random_state
+      - model.n_estimators
+      - model.max_depth
+    outs:
+      - models/best_model.joblib
