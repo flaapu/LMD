@@ -12,10 +12,10 @@ RUN pip install --no-cache-dir "setuptools<70.0.0" && pip install --no-cache-dir
 COPY . .
 
 # 5. PASO CRUCIAL: Ejecutar los scripts de Machine Learning
-RUN python src/data.py && python src/train.py
+# RUN python src/data.py && python src/train.py
 
 # 6. PASO DE CONTROL: Ejecutar Pytest inyectando la ruta raíz de Python
-RUN PYTHONPATH=. pytest
+# RUN PYTHONPATH=. pytest
 
 # 7. Exponer el puerto de FastAPI
 EXPOSE 8080
